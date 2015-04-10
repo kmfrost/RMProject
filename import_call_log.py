@@ -1,8 +1,5 @@
 import scipy.io
 import pymongo
-from pymongo import MongoClient
-from datetime import datetime
-from matlab2datetime import matlab2datetime
 
 #setup the database
 try:

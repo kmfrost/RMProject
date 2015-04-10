@@ -1,3 +1,4 @@
+from __future__ import division
 import scipy.io
 import pymongo
 from pymongo import MongoClient
@@ -20,8 +21,8 @@ def call_hist(user_num, metric, group_time=0):
 
     metric_dict={1: "$contact", 2: "$description", 3: "$direction", 4: "$duration", 5: "$event", 6: "$hashNum", 7: "$date"}
     pipe = [{"$match": {"user":user_num}}, {"$group": {"_id":metric_dict[metric], "count": {"$sum":1}}}, {"$sort": SON([("_id", -1)])}]
-    result = calls.aggregate(pipe)
-
+    result = db.command('aggregate', 'calls', pipeline=pipe)
+    
     bins = {}
     for each_bin in result['result']:
         bins[each_bin['_id']] = each_bin['count']
@@ -39,7 +40,7 @@ def call_hist(user_num, metric, group_time=0):
         elif group_time is 1:  # group by day of the week
             plt.hist([t.isoweekday() for t in times], bins = 7)
             plt.title('Histogram of call times by day of the week for user #{num}'.format(num=user_num))
-            plt.xlabel('Hour')
+            plt.xlabel('Day of the week')
             plt.show()
         elif group_time is 2:  # group by day of the month
             plt.hist([t.day for t in times], bins = 31)
@@ -52,6 +53,17 @@ def call_hist(user_num, metric, group_time=0):
             plt.xlabel('Month')
             plt.show()
     elif metric is 4:
+        if len(bins)<2:  # hist won't work for < 2 data poitns, use bar instead
+            plt.bar(bins.keys(), bins.values())
+        else:
+            bins = {key/60:bins[key] for key in bins.keys()}
+            bin_arr = np.array(bins.items())
+            bin_arr = bin_arr[np.argsort(bin_arr[:,0])]
+            x, weights = bin_arr.T
+            plt.hist(x, weights=weights)
+        plt.title('Histogram of call durations for user #{num}'.format(num=user_num))
+        plt.xlabel('Call duration in minutes')
+        plt.show()
 
     else:
         y = bins.keys()
