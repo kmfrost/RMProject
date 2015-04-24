@@ -1,5 +1,6 @@
 import sys
 sys.path.insert(0, '../')
+from matlab2datetime import matlab2datetime
 import scipy.io
 import pymongo
 
@@ -23,6 +24,6 @@ for user in xrange(num_users):
         print "Adding loc #", idx
         loc = {}
         loc['user'] = user
-        loc['time'] = each_loc[0]
+        loc['time'] = matlab2datetime(each_loc[0])
         loc['towerID'] = each_loc[1]
         locs.insert(loc)

@@ -10,6 +10,9 @@ import numpy as np
 from collections import Counter
 import math
 
+# End imports
+# ------------------------------------------------------------------------------
+# Begin initializations
 
 #setup the database
 try:
@@ -29,6 +32,9 @@ sms_log = db.sms
 
 num_original_users = 95
 
+# End initiailizations
+# ------------------------------------------------------------------------------
+# Begin main function
 
 def create_users(num_sim_users):
 
@@ -47,8 +53,13 @@ def create_users(num_sim_users):
         towerID = home_log.find({'user':clone_user})[0]['towerID']
         home_log.insert({'user':user_num, 'towerID':towerID})
         
-        add_locations(clone_user, user_num)
+        add_places(clone_user, user_num)
+        add_sms(clone_user, user_num)
+        add_towers(clone_user, user_num)
 
+# End main function
+# ------------------------------------------------------------------------------
+# Begin secondary functions
 
 def add_apps(clone_user, user_num):
         #Apps
@@ -140,12 +151,59 @@ def add_cell_data(clone_user, user_num):
     
     dates = pick_times(result, clone_user, 'date', 'year', num_cell_data)
     for date in dates:
-        data_log = {}
-        data_log['user'] = user_num
-        data_log['date'] = date
-        cell.insert(data_log)
+        print "Cell data input progress: {prog}/{tot} = {perc}%".format(prog=prog_count, tot=num_cell_data, perc=round(prog_count/num_cell_data*100, 2))
+        data = {}
+        data['user'] = user_num
+        data['date'] = date
+        cell_data_log.insert(data)
+        prog_count += 1
         
-def add_locations(clone_user, user_num):
+add_places(clone_user, user_num):        
+    #Places (Labeled locations)
+    prog_count = 0
+    collection = 'places'
+    pipe = [{"$match": {"user":clone_user}}]
+    result = db.command('aggregate', collection, pipeline=pipe)['result']
+    num_places = len(result)
+    
+    clone_user_places = places.find({'user':clone_user})[0]
+    startdate = clone_user_places['startdate']
+    num_hours = clone_user_places['num_hours']
+    
+    days = 0
+    for hour in xrange(num_hours):
+        print "Place input progress: {prog}/{tot} = {perc}%".format(prog=prog_count, tot=num_hours, perc=round(prog_count/num_hours*100, 2))
+        
+        date = startdate + datetime.timedelta(days=days) + datetime.timedelta(hours=hour)
+        if hour is 23:
+            days += 1
+        place_label = pick_based_on_hour_and_dow(clone_user, date, result, 'date', 'place')
+        place = {}
+        place['user'] = user_num
+        place['date'] = date
+        place['startdate'] = startdate
+        place['num_hours'] = num_hours
+        places.insert(place)
+        prog_count += 1
+
+def add_sms(clone_user, user_num):
+    #SMS (sent and received)
+    prog_count = 0
+    collection = 'sms'
+    pipe = [{"$match": {"user":clone_user}}]
+    result = db.command('aggregate', collection, pipeline=pipe)['result']
+    num_sms = len(result)    
+    dates = pick_times(result, clone_user, 'date', 'year', num_sms)
+    for date in dates:
+        print "SMS input progress: {prog}/{tot} = {perc}%".format(prog=prog_count, tot=num_sms, perc=round(prog_count/sms*100, 2))
+        sms = {}
+        sms['user'] = user_num
+        sms['date'] = date
+        sms_log.insert(sms)
+        prog_count += 1
+    
+        
+def add_towers(clone_user, user_num):
     #Locations (Cell tower pings)
     prog_count = 0
     collection = 'locs'
@@ -155,11 +213,17 @@ def add_locations(clone_user, user_num):
     
     dates = pick_times(result, clone_user, 'time', 'year', num_locs)
     for date in dates:
-        data_log = {}
-        data_log['user'] = user_num
-        data_log['date'] = date
-        cell.insert(data_log)
-    
+        print "Tower input progress: {prog}/{tot} = {perc}%".format(prog=prog_count, tot=num_locs, perc=round(prog_count/locs*100, 2))
+        tower = {}
+        tower['user'] = user_num
+        tower['date'] = date
+        tower['towerID'] = pick_based_on_hour_and_dow(clone_user, date, result, 'time', 'towerID')
+        tower_log.insert(tower)
+        prog_count += 1
+
+# End secondary functions
+# -----------------------------------------------------------------_------------
+# Begin helper functions
 
 def pick_app_duration(collection, orig_user_id, time_field, app_dict):
     durations = []
@@ -172,6 +236,15 @@ def pick_app_duration(collection, orig_user_id, time_field, app_dict):
             durations.append((key, random.choice(filt_result)))
     
     return durations
+
+    
+def pick_based_on_hour_and_dow(orig_user_id, date, result, time_field, filt_field):
+    # try to condition on hour of day and DOW
+    filt_result = [each_bin[filt_field] for each_bin in result if (each_bin[time_field].hour==date.hour and each_bin[time_field].weekday()==date.weekday())]
+    if not filt_result:  # if that returns nothing
+        #filter by hour of the day only
+        filt_result = [each_bin[filt_field] for each_bin in result if (each_bin[time_field].hour==date.hour)]
+    return random.choice(filt_result)
 
 def pick_call_direction_description(orig_user_id, date, result):
     # try to condition on hour of day and DOW
@@ -266,6 +339,9 @@ def pick_times(result, orig_user_id, time_field, unit_time, num_events):
             # return time as a datetime object
             times.append(datetime(year, month, dom, hour, minute))
     return times
+    
+# End helper functions
+# ------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     create_users(int(sys.argv[1]))
