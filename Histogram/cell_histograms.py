@@ -27,7 +27,7 @@ def cell_hist(user_num, group_time=0):
 
     times = []
     for each_bin in result['result']:
-        times.append(matlab2datetime(each_bin['date']))
+        times.append(each_bin['date'])
 
     times.sort()
 

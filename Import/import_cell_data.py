@@ -1,5 +1,6 @@
 import sys
 sys.path.insert(0, '../')
+from matlab2datetime import matlab2datetime
 import scipy.io
 import pymongo
 
@@ -23,5 +24,5 @@ for user in xrange(num_users):
         print "Adding call #", idx
         data_log = {}
         data_log['user'] = user
-        data_log['date'] = float(each_call[0])
+        data_log['date'] = matlab2datetime(float(each_call[0]))
         cell.insert(data_log)

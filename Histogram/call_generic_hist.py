@@ -32,7 +32,7 @@ def call_hist(user_num, metric, group_time=0):
     print bins
 
     if metric is 7:
-        times = [matlab2datetime(key) for key in bins.keys()]
+        times = bins.keys()
         if not times:
             pass
         elif group_time is 0:  # group by hour
