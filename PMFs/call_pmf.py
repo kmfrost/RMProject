@@ -31,8 +31,9 @@ def call_hist(user_num, metric, group_time=0):
         bins[each_bin['_id']] = each_bin['count']
 
     if metric is 7:
-        times = [matlab2datetime(key) for key in bins.keys()]
+        times = bins.keys()
         if not times:
+            print "No time data available for user #", user_num, "\n"
             pass
         elif group_time is 0:  # group by hour
             width = 1
@@ -43,7 +44,8 @@ def call_hist(user_num, metric, group_time=0):
             values = [(val)/total for val in values]
             plt.bar(bins, values, width) # to bin by hour
             plt.xticks([x + width*0.5 for x in xrange(24)], xrange(24))
-            plt.title('Histogram of call times by hour for user #{num}'.format(num=user_num))
+            plt.title('PMF of call times by hour for user #{num}'.format(num=user_num))
+            plt.ylabel('Probability of call')
             plt.xlabel('Hour')
             plt.show()
         elif group_time is 1:  # group by day of the week
@@ -56,7 +58,7 @@ def call_hist(user_num, metric, group_time=0):
             plt.bar(bins, values, width)
             plt.xlabel('Day of the week')
             plt.xticks([x + width*0.5 for x in bins], ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
-            plt.title('Histogram of call times by day of the week for user #{num}'.format(num=user_num))
+            plt.title('PMF of call times by day of the week for user #{num}'.format(num=user_num))
             plt.show()
         elif group_time is 2:  # group by day of the month
             width = 1
@@ -67,7 +69,7 @@ def call_hist(user_num, metric, group_time=0):
             values = [(val)/total for val in values]
             plt.bar(bins, values, width)
             plt.xticks([x + width*0.5 for x in xrange(1, 32)], xrange(1, 32))
-            plt.title('Histogram of call times by day of the month for user #{num}'.format(num=user_num))
+            plt.title('PMF of call times by day of the month for user #{num}'.format(num=user_num))
             plt.xlabel('Day of the month')
             plt.show()
         else:  # group by month
@@ -79,7 +81,7 @@ def call_hist(user_num, metric, group_time=0):
             width = 1
             plt.bar(bins, values, width)
             plt.xticks([x+width*0.5 for x in xrange(1,13)], ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])
-            plt.title('Histogram of call times by day for user #{num}'.format(num=user_num))
+            plt.title('PMF of call times by day for user #{num}'.format(num=user_num))
             plt.xlabel('Month')
             plt.show()
     elif metric is 4:
@@ -91,7 +93,7 @@ def call_hist(user_num, metric, group_time=0):
             bins = {key:bins[key]/total for key in bins.keys()}
             
             plt.bar(bins.keys(), bins.values())
-            plt.title('Histogram of call durations for user #{num}'.format(num=user_num))
+            plt.title('PMF of call durations for user #{num}'.format(num=user_num))
             plt.xlabel('Call duration in minutes')
             plt.show()
         else:
@@ -103,7 +105,7 @@ def call_hist(user_num, metric, group_time=0):
             bin_arr = bin_arr[np.argsort(bin_arr[:,0])]
             x, weights = bin_arr.T
             plt.hist(x, weights=weights)
-            plt.title('Histogram of call durations for user #{num}'.format(num=user_num))
+            plt.title('PMF of call durations for user #{num}'.format(num=user_num))
             plt.xlabel('Call duration in minutes')
             plt.show()
 
@@ -117,7 +119,7 @@ def call_hist(user_num, metric, group_time=0):
 
         plt.bar(xrange(len(x)), x, align='center')
         plt.xticks(xrange(len(y)), y, size='small')
-        plt.title('Histogram of call {m} for user #{num}'.format(m=metric_dict[metric].lstrip('$'), num=user_num))
+        plt.title('PMF of call {m} for user #{num}'.format(m=metric_dict[metric].lstrip('$'), num=user_num))
         plt.xlabel(metric_dict[metric].lstrip('$').capitalize())
         plt.show()
 

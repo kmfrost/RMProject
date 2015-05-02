@@ -82,7 +82,7 @@ def add_apps(clone_user, user_num):
         prog_count = 0
         pipe = [{"$match": {"user":clone_user}}]
         result = db.command('aggregate', 'apps', pipeline=pipe)['result']
-        num_apps = min(len(result), 8000)
+        num_apps = len(result)
         if test_mode:
             num_apps = min(num_test, num_apps)
 
@@ -192,7 +192,6 @@ def add_places(clone_user, user_num):
     try: 
         clone_user_places = place_log.find({'user':clone_user})[0]
     except IndexError:
-        print "Encountered Error!"
         return
     startdate = clone_user_places['startdate']
     num_hours = clone_user_places['num_hours']

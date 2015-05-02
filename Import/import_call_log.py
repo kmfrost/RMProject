@@ -10,7 +10,7 @@ try:
     print "\nConnected to MongoDB\n"
 except pymongo.errors.ConnectionFailure, e:
     print "Could not connect to MongoDB: %s" % e
-db = client.rm_db
+db = client.rm_orig_db
 calls = db.calls
 
 mat_data = scipy.io.loadmat('network_data.mat')

@@ -1,0 +1,53 @@
+plt.bar(xrange(4), p_priors, 1)
+plt.xlabel('Location' , fontsize=24)
+plt.title('Prior for user #32 being at each location', fontsize=30)
+plt.ylabel('Probability', fontsize=24)
+ plt.xticks([x+0.5 for x in xrange(4)], labels, fontsize=24)
+ plt.yticks(fontsize=24)
+plt.show()
+
+
+ plt.bar(xrange(4), likelihoods_h, 1)
+plt.xlabel('Location')
+plt.title('Likelihood of user #32 being at each location at 22:00')
+plt.ylabel('Likelihood')
+ plt.xticks([x+0.5 for x in xrange(4)], labels)
+
+plt.show()
+
+
+ plt.bar(xrange(4), likelihoods_dow, 1)
+plt.xlabel('Location')
+plt.title('Likelihood of user #32 being at each location on Monday')
+plt.ylabel('Likelihood')
+ plt.xticks([x+0.5 for x in xrange(4)], labels)
+
+plt.show()
+
+
+
+width = 0.4
+bins = [bin-width/2 for bin in xrange(4)]
+bins2 = [bin+width/2 for bin in xrange(4)]
+
+plt.bar(bins, likelihoods_h, width, color='b', label='At {time}:00'.format(time=test_hour))
+plt.bar(bins2, likelihoods_dow, width, color='m', label='On {day}'.format(day=dow_dict[test_dow]))
+
+plt.plot((-0.5, 4), (1/7, 1/7), 'm--', linewidth=2)
+plt.plot((-0.5, 4), (1/24, 1/24), 'b--', zorder=0, linewidth=2)
+
+plt.xlabel('Location', fontsize=24)
+ plt.xticks([x+width*0.5 for x in xrange(4)], labels, fontsize=24)
+plt.yticks(fontsize=24)
+plt.title('Likelihood of user #32 being at each location', fontsize=30)
+plt.legend(fontsize=24)
+plt.show()
+
+
+ plt.bar(xrange(4), posterior, 1)
+plt.xlabel('Location', fontsize=24)
+plt.title('Posterior of user #32 being at each location', fontsize=30)
+ plt.xticks([x+0.5 for x in xrange(4)], labels, fontsize=24)
+ plt.yticks(fontsize=24)
+
+plt.show()

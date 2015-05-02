@@ -1,0 +1,39 @@
+            rand_hour = random.choice(xrange(cv_hours))
+            test_time = cv_start + timedelta(hours=rand_hour)
+            test_hour = test_time.hour
+            test_dow = test_time.weekday()
+            next_time = test_time + timedelta(hours = 1)
+
+
+            home = places_priors['Home']*home_likelihood_h[test_hour]*home_likelihood_dow[test_dow]
+            work = places_priors['Work']*work_likelihood_h[test_hour]*work_likelihood_dow[test_dow]
+            elsewhere = places_priors['Elsewhere']*else_likelihood_h[test_hour]*else_likelihood_dow[test_dow]
+            no_signal = places_priors['No signal']*no_sig_likelihood_h[test_hour]*no_sig_likelihood_dow[test_dow]
+            
+            probs = [home, work, elsewhere, no_signal]
+            place_dict = {0: u'Home', 1: u'Work', 2: u'Elsewhere', 3: u'No signal'}
+            predict = place_dict[probs.index(max(probs))]
+
+            pipe = [{"$match": {"user":user, "date": {"$lt": next_time, "$gte": test_time}}}]
+            result = db.command('aggregate', 'places', pipeline=pipe)['result'][0]
+            place = result['place']
+            home = places_priors['Home']*home_likelihood_h[test_hour]*home_likelihood_dow[test_dow]
+            work = places_priors['Work']*work_likelihood_h[test_hour]*work_likelihood_dow[test_dow]
+            elsewhere = places_priors['Elsewhere']*else_likelihood_h[test_hour]*else_likelihood_dow[test_dow]
+            no_signal = places_priors['No signal']*no_sig_likelihood_h[test_hour]*no_sig_likelihood_dow[test_dow]
+            
+            probs = [home, work, elsewhere, no_signal]
+            place_dict = {0: u'Home', 1: u'Work', 2: u'Elsewhere', 3: u'No signal'}
+            predict = place_dict[probs.index(max(probs))]
+
+            pipe = [{"$match": {"user":user, "date": {"$lt": next_time, "$gte": test_time}}}]
+            result = db.command('aggregate', 'places', pipeline=pipe)['result'][0]
+            place = result['place']
+likelihoods_h = [no_sig_likelihood_h[test_hour], else_likelihood_h[test_hour], home_likelihood_h[test_hour], work_likelihood_h[test_hour]]
+
+ likelihoods_dow = [no_sig_likelihood_dow[test_dow], else_likelihood_dow[test_dow], home_likelihood_dow[test_dow], work_likelihood_dow[test_dow]]
+ posterior = [no_signal, elsewhere, home, work]
+ 
+
+			
+print predict, place

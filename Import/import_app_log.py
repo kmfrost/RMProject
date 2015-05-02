@@ -11,7 +11,7 @@ try:
     print "\nConnected to MongoDB\n"
 except pymongo.errors.ConnectionFailure, e:
     print "Could not connect to MongoDB: %s" % e
-db = client.rm_db
+db = client.rm_orig_db
 apps = db.apps
 
 mat_data = scipy.io.loadmat('network_data.mat')
@@ -26,16 +26,16 @@ for user in xrange(num_users):
         print "Adding app #", idx
         app = {}
         app['user'] = user
-        app['app_date'] = matlab2datetime((comm_data[0][user][18][0][idx]))
+        app['date'] = matlab2datetime((comm_data[0][user][18][0][idx]))
         try:
-            app['app_name'] = str(comm_data[0][user][16][0][idx][0])
+            app['name'] = str(comm_data[0][user][16][0][idx][0])
         except UnicodeEncodeError:
             print "\n\n ERROR OCCURED.  Adding ", comm_data[0][user][16][0][idx]
-            app['app_name'] = str(comm_data[0][user][16][0][idx])
+            app['name'] = str(comm_data[0][user][16][0][idx])
 
         if idx<num_apps-1:
-            time_to_next_app = abs(matlab2datetime(comm_data[0][user][18][0][idx+1]) - app['app_date']).seconds
-            app['app_duration']=min(time_to_next_app, 1800)  # if they're using an app for more than 30 minutes, assume the phone was just left in that state
+            time_to_next_app = abs(matlab2datetime(comm_data[0][user][18][0][idx+1]) - app['date']).seconds
+            app['duration']=min(time_to_next_app, 1800)  # if they're using an app for more than 30 minutes, assume the phone was just left in that state
         else:
-            app['app_duration'] = datetime.timedelta(minutes=5).seconds
+            app['duration'] = datetime.timedelta(minutes=5).seconds
         apps.insert(app)
